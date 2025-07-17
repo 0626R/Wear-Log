@@ -5,8 +5,15 @@
 
     {{-- ヘッダー（ロゴ＋通知アイコンなど） --}}
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <span><i class="bi bi-bell-fill text-danger">18</i></span>
-        <h4 class="text-center">JUSCLO</h4>
+        {{-- 左の空要素（スペース確保） --}}
+        <div style="width: 40px;"></div>
+
+       {{-- ロゴ画像 --}}
+        <div class="text-center mb-3">
+            <img src="{{ asset('images/logo1.png') }}" alt="Wear Log ロゴ" style="height: 80px;">
+        </div>
+
+        {{-- 右のアイコン --}}
         <div>
             <i class="bi bi-filter"></i>
             <i class="bi bi-list ms-2"></i>
