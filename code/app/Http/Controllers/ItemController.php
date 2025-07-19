@@ -12,5 +12,10 @@ class ItemController extends Controller
         $items = Item::all();
         return view('items.home', compact('items'));
     }
+    
+    public function filter()
+    {
+        return view('items.filter');
+    }
 }
 

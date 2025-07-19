@@ -15,8 +15,9 @@
 
         {{-- 右のアイコン --}}
         <div>
-            <i class="bi bi-filter"></i>
-            <i class="bi bi-list ms-2"></i>
+            <a href="{{ route('items.filter') }}">
+                <img src="{{ asset('images/filter_icon.png') }}" alt="フィルター" style="height: 50px;">
+            </a>
         </div>
     </div>
 
