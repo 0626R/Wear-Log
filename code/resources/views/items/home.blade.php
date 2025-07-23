@@ -29,9 +29,18 @@
     </div>
 
     {{-- カテゴリ --}}
+    @php
+        $categories = ['すべて','トップス','ボトムス','ワンピース','アウター','セットアップ','バッグ','シューズ','アクセサリー','ファッション雑貨','その他'];
+        $selectedCategory = request()->input('category', 'すべて');
+    @endphp
+
     <div class="d-flex overflow-auto mb-3">
-        @foreach(['すべて', 'バッグ', 'アウター', 'シューズ', 'トップス'] as $category)
-            <span class="me-3">{{ $category }}</span>
+        @foreach($categories as $category)
+            <a href="{{ route('items.home', ['category' => $category]) }}"
+            class="me-3 px-3 py-1 rounded-pill text-decoration-none
+            {{ $selectedCategory === $category ? 'bg-primary text-white border border-primary' : 'bg-light text-dark' }}">
+                {{ $category }}
+            </a>
         @endforeach
     </div>
 
