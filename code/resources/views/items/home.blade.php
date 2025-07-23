@@ -34,15 +34,18 @@
         $selectedCategory = request()->input('category', 'すべて');
     @endphp
 
-    <div class="d-flex overflow-auto mb-3">
+    <div class="d-flex overflow-auto border-bottom mb-3 px-3">
         @foreach($categories as $category)
             <a href="{{ route('items.home', ['category' => $category]) }}"
-            class="me-3 px-3 py-1 rounded-pill text-decoration-none
-            {{ $selectedCategory === $category ? 'bg-primary text-white border border-primary' : 'bg-light text-dark' }}">
+            class="me-4 pb-2 text-decoration-none
+            {{ $selectedCategory === $category 
+                    ? 'border-bottom border-3 border-primary text-primary fw-bold' 
+                    : 'text-secondary border-bottom border-0' }}">
                 {{ $category }}
             </a>
         @endforeach
     </div>
+
 
     {{-- 商品カード --}}
     <div class="row">
