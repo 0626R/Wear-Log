@@ -31,9 +31,11 @@
     {{-- カテゴリ --}}
     @php
         $categories = ['すべて','トップス','ボトムス','ワンピース','アウター','セットアップ','バッグ','シューズ','アクセサリー','ファッション雑貨','その他'];
+        // ↓すべて」を初期値
         $selectedCategory = request()->input('category', 'すべて');
     @endphp
 
+    {{-- カテゴリ選択で下線表示 --}}
     <div class="d-flex overflow-auto border-bottom mb-3 px-3">
         @foreach($categories as $category)
             <a href="{{ route('items.home', ['category' => $category]) }}"
