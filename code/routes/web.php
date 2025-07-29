@@ -13,3 +13,4 @@ Route::get('/filter', [ItemController::class, 'home'])->name('items.filter');
 Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar');
 Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics');
 Route::get('/mypage', [MypageController::class, 'index'])->name('mypage');
+Route::get('/items/create', [ItemController::class, 'create'])->name('items.create');

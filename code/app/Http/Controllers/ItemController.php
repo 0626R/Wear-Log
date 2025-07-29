@@ -21,5 +21,11 @@ class ItemController extends Controller
 
         return view('items.home', compact('items', 'selectedCategory'));
     }
+
+    // 洋服新規登録
+    public function create()
+    {
+        return view('items.create');
+    }
 }
 
