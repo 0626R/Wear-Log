@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('email', 100)->unique();
             $table->string('password', 255);
             $table->boolean('is_premium')->default(0);
-            $table->timestamps();
-            $table->softDeletes();
+            $table->timestamps(); // created_at, updated_at を自動追加
+            $table->softDeletes(); // deleted_at
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

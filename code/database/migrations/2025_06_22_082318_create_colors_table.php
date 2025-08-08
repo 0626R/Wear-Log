@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('colors', function (Blueprint $table) {
             $table->id(); // 主キー
             $table->string('name', 50); // カラー名
+            $table->timestamps();
         });
     }
 

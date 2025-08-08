@@ -5,7 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
 class Item extends Model
 {
-    use HasFactory;
+    public function colors()
+    {
+        return $this->belongsToMany(Color::class, 'item_colors');
+    }
 }
