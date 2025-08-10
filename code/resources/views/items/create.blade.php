@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-4">
+<div class="container mt-4 pb-5" style="padding-bottom: 96px;">
 
     <h2 class="text-center mb-2">アイテム登録</h2>
     <hr class="mb-4" style="width: 100%; height: 2px; background-color: black; margin: 0 auto;">
@@ -36,8 +36,8 @@
                 {{-- カラー：画面遷移で選択 --}}
                 <div class="mb-3">
                     <label>カラー</label><br>
-                    <input type="text" name="color" class="form-control" value="{{ request('color') }}" readonly>
-                    <a href="{{ route('items.selectColor') }}" class="text-decoration-none small text-primary">カラーを選択</a>
+                    {{-- <input type="text" name="color" class="form-control" value="{{ request('color') }}" readonly> --}}
+                    <a href="{{ route('items.selectColor') }}" class="btn btn-outline-secondary">カラーを選択</a>
                     @if(session('selected_colors'))
                     <p>選択されたカラー:
                         @foreach(App\Models\Color::find(session('selected_colors')) as $color)
@@ -79,11 +79,16 @@
                     <textarea name="memo" class="form-control" rows="2"></textarea>
                 </div>
             </div>
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-dark w-50">完了</button>
+            <div class="col-12">
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-dark w-50">完了</button>
+                </div>
             </div>
         </div>
     </form>
+
+    {{-- フッターに被らないためのスペース --}}
+    <div style="height: 96px;"></div>
 </div>
 
 {{-- @section('scripts')

@@ -47,7 +47,8 @@ class ItemController extends Controller
     public function selectColor()
     {
         $colors = Color::all(); // ← DBから取得（IDも含む）
-        return view('items.select-color', compact('colors'));
+        $selected = session('selected_colors', []); // 前回の選択(ID配列)を取り出す
+        return view('items.select-color', compact('colors', 'selected'));
     }
 
     public function store(Request $request)
@@ -71,7 +72,7 @@ class ItemController extends Controller
 
     public function storeColorSelection(Request $request)
     {
-        session(['selected_colors' => $request->input('colors', [])]); // ← IDの配列が入る
+        session(['selected_colors' => $request->input('colors', [])]); // 送られてきた colors[]（IDの配列）をセッションに保存
         return redirect()->route('items.create');
     }
 

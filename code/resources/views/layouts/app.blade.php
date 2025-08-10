@@ -39,7 +39,7 @@
 
 
     <a href="{{ route('items.create') }}" class="fab">
-        <img src="{{ asset('images/icon_camera.png') }}" alt="洋服登録" style="height: 28px;">
+        <img src="{{ asset('images/icon_camera.png') }}" alt="洋服登録" style="height: 40px;">
     </a>
     
 
