@@ -50,19 +50,46 @@
 
 
     {{-- 商品カード --}}
-    <div class="row">
-        @foreach($items as $item)
-        <div class="col-4 mb-3">
-            <div class="card shadow-sm rounded">
-                @if($item->image)
-                  <img src="{{ asset('storage/'.$item->image) }}" class="card-img-top" alt="{{ $item->brand }}">
-                @else
-                  <img src="{{ asset('images/no_image.png') }}" class="card-img-top" alt="no image">
-                @endif
-            </div>
-        </div>
-          @endforeach
-    </div>
+    <style>
+        .item-grid{
+          display:grid;
+          grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); /* PCで7〜8枚並ぶ */
+          gap:12px;
+        }
+        .item-card{
+          width:100%;
+          aspect-ratio:1/1;          /* 正方形 */
+          overflow:hidden;
+          border:1px solid #e5e5e5;
+          border-radius:10px;
+          background:#fff;
+          box-shadow:0 1px 4px rgba(0,0,0,.04);
+        }
+        .item-card img{
+          width:100%;
+          height:100%;
+          object-fit:cover;          /* はみ出しをトリミング */
+          display:block;
+        }
+        @media (max-width:576px){ .item-grid{ grid-template-columns:repeat(3,1fr); } }
+        @media (min-width:577px) and (max-width:992px){ .item-grid{ grid-template-columns:repeat(5,1fr); } }
+      </style>
+      
+      <div class="item-grid">
+        @foreach ($items as $item)
+          <div class="item-card">
+            @if ($item->image)
+              <img src="{{ asset('storage/'.$item->image) }}" alt="{{ $item->brand }}">
+            @else
+              <img src="{{ asset('images/no_image.png') }}" alt="no image">
+            @endif
+          </div>
+        @endforeach
+      </div>
+    {{-- フッターに被らないためのスペース --}}
+    <div style="height: 96px;"></div>
+
 
 </div>
 @endsection
+

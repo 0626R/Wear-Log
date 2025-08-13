@@ -60,8 +60,7 @@ class ItemController extends Controller
 
     public function store(\Illuminate\Http\Request $request)
     {
-
-       // 1) バリデーション
+        // 1) バリデーション
         $data = $request->validate([
             'brand'        => ['nullable','string','max:50'],
             'price'        => ['nullable','integer','min:0'],
@@ -69,55 +68,38 @@ class ItemController extends Controller
             'purchased_at' => ['nullable','date'],
             'status'       => ['required','in:出品しない,出品する,検討中'],
             'memo'         => ['nullable','string','max:1000'],
-            'image'        => ['nullable','image','max:5120'],
+            'image'        => ['nullable','image','max:5120'], // ← name="image" に対応
         ]);
-
-        // // 2) カテゴリはセッションから
-        // $data['category'] = session('selected_category');
-        $data['category'] = null;
-        unset($data['category']);
-
-        // 必須：外部キー
-        $data['user_id'] = auth()->id() ?? 1;
-
-        // 3) 画像アップロード（storage/app/public/items に保存）
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('items', 'public');
-        }
-
-        // 検証用
-        // dd([
-        //     'hasFile' => $request->hasFile('image'),
-        //     'file'    => $request->file('image'),
-        //     'all'     => $request->all(),  // 他の値も見える
-        // ]);
     
-
-        // 4) アイテム作成
+        // 2) 外部キー
+        $data['user_id'] = auth()->id() ?? 1;
+    
+        // 3) 画像アップロード（ここで $data['image'] をセット）
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('items', 'public'); // items/xxxx.jpg
+        }
+    
+        // 4) 作成は「必ず」ここ。これより前に create() を呼ばない。
         $item = \App\Models\Item::create($data);
-
-         // カテゴリ（pivot）
-        $selectedName = collect(session('selected_category', []))->first(); // 文字列ならそのまま
-        // $categoryId   = \App\Models\Category::where('name', $selectedName)->value('id');
-
+    
+        // （任意）カテゴリ
+        $selectedName = collect(session('selected_category', []))->first();
         if ($selectedName) {
             $categoryId = \App\Models\Category::where('name', $selectedName)->value('id');
             if ($categoryId) {
                 $item->categories()->sync([$categoryId]);
             }
         }
-
-        // 5) カラー（多対多）
         $colorIds = $request->input('colors', session('selected_colors', []));
         if (!empty($colorIds)) {
             $item->colors()->sync($colorIds);
         }
-
-        // 6) セッションクリア
+    
         session()->forget(['selected_category','selected_colors']);
-
+    
         return redirect()->route('items.home')->with('success', '登録完了');
-        }
+    }
+
 
     public function storeColorSelection(Request $request)
     {
