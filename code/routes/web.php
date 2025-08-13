@@ -9,7 +9,7 @@ use App\Http\Controllers\MypageController;
 
 // "/" にアクセスしたら、ItemController の home メソッドを呼ぶ
 Route::get('/', [ItemController::class, 'home'])->name('items.home');
-Route::get('/filter', [ItemController::class, 'home'])->name('items.filter');
+Route::get('/filter', [ItemController::class, 'filter'])->name('items.filter');
 Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar');
 Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics');
 Route::get('/mypage', [MypageController::class, 'index'])->name('mypage');
@@ -19,3 +19,7 @@ Route::get('/items/select-category', [ItemController::class, 'selectCategory'])-
 Route::post('/items/select-category', [ItemController::class, 'storeCategorySelection']);
 Route::get('/items/select-color', [ItemController::class, 'selectColor'])->name('items.selectColor');
 Route::post('/items/store-color-selection', [ItemController::class, 'storeColorSelection'])->name('items.storeColorSelection');
+Route::get('/items/clear-selected-colors', function () {
+    session()->forget('selected_colors');
+    return redirect()->route('items.selectColor');
+})->name('items.clearSelectedColors');

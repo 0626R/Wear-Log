@@ -15,10 +15,17 @@ class ItemController extends Controller
 
     public function home(Request $request)
     {
+        // 選択されたカテゴリ（なければ「すべて」）
         $selectedCategory = $request->input('category', 'すべて');
-        $items = Item::when($selectedCategory !== 'すべて', function ($query) use ($selectedCategory) {
-            return $query->where('category', $selectedCategory);
-        })->get();
+
+        // アイテム取得（カテゴリで絞り込み）
+    $items = \App\Models\Item::with('categories')
+        ->when($selectedCategory !== 'すべて', function ($q) use ($selectedCategory) {
+            $q->whereHas('categories', function ($qq) use ($selectedCategory) {
+                $qq->where('name', $selectedCategory);
+            });
+        })
+        ->get();
 
         return view('items.home', compact('items', 'selectedCategory'));
     }
@@ -51,24 +58,66 @@ class ItemController extends Controller
         return view('items.select-color', compact('colors', 'selected'));
     }
 
-    public function store(Request $request)
+    public function store(\Illuminate\Http\Request $request)
     {
-        $item = Item::create([
-            'category'      => session('selected_category'),
-            'brand'         => $request->input('brand'),
-            'price'         => $request->input('price'),
-            'season'        => $request->input('season'),
-            'purchased_at'  => $request->input('purchased_at'),
-            'status'        => $request->input('status'),
-            'memo'          => $request->input('memo'),
+
+       // 1) バリデーション
+        $data = $request->validate([
+            'brand'        => ['nullable','string','max:50'],
+            'price'        => ['nullable','integer','min:0'],
+            'season'       => ['nullable','in:春,夏,秋,冬'],
+            'purchased_at' => ['nullable','date'],
+            'status'       => ['required','in:出品しない,出品する,検討中'],
+            'memo'         => ['nullable','string','max:1000'],
+            'image'        => ['nullable','image','max:5120'],
         ]);
 
-        if ($request->has('colors')) {
-            $item->colors()->sync($request->input('colors')); // 多対多リレーション
+        // // 2) カテゴリはセッションから
+        // $data['category'] = session('selected_category');
+        $data['category'] = null;
+        unset($data['category']);
+
+        // 必須：外部キー
+        $data['user_id'] = auth()->id() ?? 1;
+
+        // 3) 画像アップロード（storage/app/public/items に保存）
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('items', 'public');
         }
 
+        // 検証用
+        // dd([
+        //     'hasFile' => $request->hasFile('image'),
+        //     'file'    => $request->file('image'),
+        //     'all'     => $request->all(),  // 他の値も見える
+        // ]);
+    
+
+        // 4) アイテム作成
+        $item = \App\Models\Item::create($data);
+
+         // カテゴリ（pivot）
+        $selectedName = collect(session('selected_category', []))->first(); // 文字列ならそのまま
+        // $categoryId   = \App\Models\Category::where('name', $selectedName)->value('id');
+
+        if ($selectedName) {
+            $categoryId = \App\Models\Category::where('name', $selectedName)->value('id');
+            if ($categoryId) {
+                $item->categories()->sync([$categoryId]);
+            }
+        }
+
+        // 5) カラー（多対多）
+        $colorIds = $request->input('colors', session('selected_colors', []));
+        if (!empty($colorIds)) {
+            $item->colors()->sync($colorIds);
+        }
+
+        // 6) セッションクリア
+        session()->forget(['selected_category','selected_colors']);
+
         return redirect()->route('items.home')->with('success', '登録完了');
-    }
+        }
 
     public function storeColorSelection(Request $request)
     {

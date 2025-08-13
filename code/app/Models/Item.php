@@ -10,6 +10,23 @@ class Item extends Model
 {
     public function colors()
     {
-        return $this->belongsToMany(Color::class, 'item_colors');
+        return $this->belongsToMany(\App\Models\Color::class, 'item_colors');
+    }
+
+    protected $fillable = [
+        'user_id', 'brand', 'season', 'price', 'purchased_at',
+        'status', 'memo', 'wear_count', 'image', 'deleted_flg',
+    ];
+
+    protected $casts = [
+        'purchased_at' => 'date',
+        'deleted_flg'  => 'boolean',
+    ];
+
+    
+
+    public function categories()
+    {
+        return $this->belongsToMany(\App\Models\Category::class, 'item_categories');
     }
 }

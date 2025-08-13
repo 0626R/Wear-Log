@@ -1,4 +1,4 @@
-@extends('layouts.app')
+{{-- @extends('layouts.app')
 
 @section('content')
 <div class="container">
@@ -14,4 +14,45 @@
         <button type="submit">決定</button>
     </form>
 </div>
+@endsection --}}
+
+
+@extends('layouts.app')
+
+@section('content')
+<div class="container mt-3">
+  <h4>カラーを選択</h4>
+
+  <form action="{{ route('items.storeColorSelection') }}" method="POST">
+    @csrf
+
+    <div class="list-group mt-3">
+      @foreach($colors as $color)
+        <label class="list-group-item">
+          <input type="checkbox"
+                 name="colors[]"
+                 value="{{ $color->id }}"
+                 class="form-check-input me-2"
+                 {{-- バリデーションで戻ってきた場合は old()、通常はセッション値で保持 --}}
+                 {{ in_array($color->id, old('colors', $selected ?? []), true) ? 'checked' : '' }}>
+          {{ $color->name }}
+        </label>
+      @endforeach
+    </div>
+
+    <div class="d-flex gap-2 mt-3">
+      <a href="{{ route('items.create') }}" class="btn btn-outline-secondary flex-fill">キャンセル</a>
+      <button type="submit" class="btn btn-dark flex-fill">決定して戻る</button>
+    </div>
+
+    {{-- クリア機能（全部外したい時） --}}
+    <div class="text-end mt-2">
+      <a href="{{ route('items.clearSelectedColors') }}" class="small text-decoration-none">選択をクリア</a>
+    </div>
+  </form>
+</div>
+
+    {{-- フッターに被らないためのスペース --}}
+    <div style="height: 96px;"></div>
+
 @endsection

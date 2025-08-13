@@ -38,13 +38,22 @@
                     <label>カラー</label><br>
                     {{-- <input type="text" name="color" class="form-control" value="{{ request('color') }}" readonly> --}}
                     <a href="{{ route('items.selectColor') }}" class="btn btn-outline-secondary">カラーを選択</a>
-                    @if(session('selected_colors'))
+                    
+                    @php
+                        $selectedIds = session('selected_colors', []);
+                        $selectedColors = $selectedIds ? \App\Models\Color::whereIn('id', $selectedIds)->get() : collect();
+                    @endphp
+                    
+                    @if($selectedColors->isNotEmpty())
                     <p>選択されたカラー:
-                        @foreach(App\Models\Color::find(session('selected_colors')) as $color)
-                            <span class="badge bg-secondary">{{ $color->name }}</span>
+                        @foreach($selectedColors as $c)
+                        <span class="badge bg-secondary me-1">{{ $c->name }}</span>
+                        {{-- 保存用 hidden（最終submit時に一緒に送る） --}}
+                        <input type="hidden" name="colors[]" value="{{ $c->id }}">
                         @endforeach
                     </p>
                     @endif
+
 
                 </div>
                 
@@ -56,12 +65,15 @@
                 <div class="mb-3">
                     <label>シーズン</label>
                     <select name="season" class="form-control">
+                        <option value="">未選択</option>
+                        <option value="春">通年</option>
                         <option value="春">春</option>
                         <option value="夏">夏</option>
                         <option value="秋">秋</option>
                         <option value="冬">冬</option>
-                    </select>
+                      </select>
                 </div>
+                
                 <div class="mb-3">
                     <label>購入日</label>
                     <input type="date" name="purchase_date" class="form-control">
@@ -70,7 +82,7 @@
                     <label>出品状況</label>
                     <select name="status" class="form-control">
                         <option value="出品する">出品する</option>
-                        <option value="しない">しない</option>
+                        <option value="出品しない">出品しない</option>
                         <option value="検討中">検討中</option>
                     </select>
                 </div>
@@ -115,3 +127,12 @@
 
 
 @endsection
+
+<script>
+    document.getElementById('imageInput').addEventListener('change', (e) => {
+      const [file] = e.target.files;
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      document.getElementById('preview').src = url;
+    });
+  </script>

@@ -21,7 +21,7 @@
         </div>
     </div>
 
-    {{-- 天気情報 --}}
+    {{-- 天気情報APIにする --}}
     <div class="bg-light rounded p-2 d-flex justify-content-between align-items-center mb-3">
         <span>13(金)</span>
         <span class="text-danger">☀️ 23°C</span><span class="text-info">/13°C</span>
@@ -54,10 +54,14 @@
         @foreach($items as $item)
         <div class="col-4 mb-3">
             <div class="card shadow-sm rounded">
-                <img src="{{ $item->image_url }}" class="card-img-top" alt="{{ $item->name }}">
+                @if($item->image)
+                  <img src="{{ asset('storage/'.$item->image) }}" class="card-img-top" alt="{{ $item->brand }}">
+                @else
+                  <img src="{{ asset('images/no_image.png') }}" class="card-img-top" alt="no image">
+                @endif
             </div>
         </div>
-        @endforeach
+          @endforeach
     </div>
 
 </div>

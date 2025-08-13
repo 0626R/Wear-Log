@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // 外部キー
-            $table->string('brand', 50);
-            $table->enum('season', ['春', '夏', '秋', '冬']);
-            $table->integer('price');
-            $table->date('purchased_at');
+            $table->string('brand', 50)->nullable();
+            $table->enum('season', ['春', '夏', '秋', '冬'])->nullable();
+            $table->integer('price')->nullable();
+            $table->date('purchased_at')->nullable();
             $table->enum('status', ['出品しない', '出品する', '検討中']);
             $table->text('memo')->nullable();
             $table->integer('wear_count')->default(0);
