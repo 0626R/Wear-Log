@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // 外部キー
+            $table->string('category');
             $table->string('brand', 50)->nullable();
             $table->enum('season', ['春', '夏', '秋', '冬'])->nullable();
             $table->integer('price')->nullable();

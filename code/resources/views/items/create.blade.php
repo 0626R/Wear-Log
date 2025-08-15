@@ -25,10 +25,23 @@
                 <div class="mb-3">
                     <label>カテゴリ</label><br>
                     <a href="{{ route('items.selectCategory') }}" class="btn btn-outline-secondary" onclick="event.preventDefault(); goAfterSaveDraft(this.href);">カテゴリを選択</a>
-                    @if(session('selected_category'))
+                    {{-- @if(session('selected_category'))
                         <p class="mt-2">
                             選択中: {{ implode(', ', session('selected_category')) }}
                         </p>
+                    @endif --}}
+                    @php
+                        $selectedCatIds = old('categories', data_get(session('item_form'), 'categories', session('selected_categories', [])));
+                        $selectedCats   = $selectedCatIds ? \App\Models\Category::whereIn('id',$selectedCatIds)->get() : collect();
+                    @endphp
+
+                    @if($selectedCats->isNotEmpty())
+                    <p class="mt-2">選択中:
+                        @foreach($selectedCats as $cat)
+                        <span class="badge bg-secondary me-1">{{ $cat->name }}</span>
+                        <input type="hidden" name="categories[]" value="{{ $cat->id }}">
+                        @endforeach
+                    </p>
                     @endif
                 </div>
                 <div class="mb-3">
@@ -82,6 +95,15 @@
                         @endforeach
                     </select>
                 </div>
+
+                {{-- 着用回数（wear_count） --}}
+                <div class="mb-3">
+                    <label>着用回数</label>
+                    <input type="number" name="wear_count" class="form-control"
+                        min="0" step="1"
+                        value="{{ old('wear_count', data_get(session('item_form'), 'wear_count', 0)) }}">
+                </div>
+
                 <div class="mb-3">
                     <label>メモ</label>
                     <textarea name="memo" class="form-control" rows="2">{{ old('memo', data_get(session('item_form'), 'memo', '')) }}</textarea>
@@ -92,6 +114,7 @@
                 <div class="text-center mt-4">
                 <button type="submit" class="btn btn-dark w-50">完了</button>
             </div>
+            
         </div>
     </form>
 
@@ -133,44 +156,52 @@
         });
 
 
-    // 保存するフィールド名を列挙
-    const FIELDS = ['brand', 'price', 'season', 'purchased_at', 'status', 'memo'];
+    // // 保存するフィールド名を列挙
+    // const FIELDS = ['brand', 'price', 'season', 'purchased_at', 'status', 'memo'];
   
     // 入力値を localStorage へ
-    function saveDraft() {
-      const obj = {};
-      FIELDS.forEach(name => {
-        const el = document.querySelector(`[name="${name}"]`);
-        if (el) obj[name] = el.value ?? '';
-      });
-      localStorage.setItem('item_draft', JSON.stringify(obj));
+    // function saveDraft() {
+    //   const obj = {};
+    //   FIELDS.forEach(name => {
+    //     const el = document.querySelector(`[name="${name}"]`);
+    //     if (el) obj[name] = el.value ?? '';
+    //   });
+    //   localStorage.setItem('item_draft', JSON.stringify(obj));
+    // }
+  
+    // // localStorage から復元
+    // function restoreDraft() {
+    //   const raw = localStorage.getItem('item_draft');
+    //   if (!raw) return;
+    //   try {
+    //     const obj = JSON.parse(raw);
+    //     FIELDS.forEach(name => {
+    //       const el = document.querySelector(`[name="${name}"]`);
+    //       if (el && obj[name] != null) el.value = obj[name];
+    //     });
+    //   } catch (e) {}
+    // }
+  
+    // // 入力のたびに自動保存
+    // document.addEventListener('input', (e) => {
+    //   if (FIELDS.includes(e.target.name)) saveDraft();
+    // });
+  
+    // // 初期表示で復元
+    // document.addEventListener('DOMContentLoaded', restoreDraft);
+  
+    // // フォーム送信時に下書きを消す（送信後は不要なので）
+    // document.getElementById('itemForm').addEventListener('submit', () => {
+    //   localStorage.removeItem('item_draft');
+    // });
+
+    // サーバ側 flash を Blade で埋め込み
+    const FROM_SELECTOR = {{ session('from_selector') ? 'true' : 'false' }};
+
+    // 普通に来た時は下書きを消す
+    if (!FROM_SELECTOR) {
+    localStorage.removeItem('item_draft');
     }
-  
-    // localStorage から復元
-    function restoreDraft() {
-      const raw = localStorage.getItem('item_draft');
-      if (!raw) return;
-      try {
-        const obj = JSON.parse(raw);
-        FIELDS.forEach(name => {
-          const el = document.querySelector(`[name="${name}"]`);
-          if (el && obj[name] != null) el.value = obj[name];
-        });
-      } catch (e) {}
-    }
-  
-    // 入力のたびに自動保存
-    document.addEventListener('input', (e) => {
-      if (FIELDS.includes(e.target.name)) saveDraft();
-    });
-  
-    // 初期表示で復元
-    document.addEventListener('DOMContentLoaded', restoreDraft);
-  
-    // フォーム送信時に下書きを消す（送信後は不要なので）
-    document.getElementById('itemForm').addEventListener('submit', () => {
-      localStorage.removeItem('item_draft');
-    });
   </script>
 
 <script>

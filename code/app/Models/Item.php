@@ -14,13 +14,14 @@ class Item extends Model
     }
 
     protected $fillable = [
-        'user_id', 'brand', 'season', 'price', 'purchased_at',
+        'user_id', 'brand', 'category', 'season', 'price', 'purchased_at',
         'status', 'memo', 'wear_count', 'image', 'deleted_flg',
     ];
 
     protected $casts = [
         'purchased_at' => 'date',
         'deleted_flg'  => 'boolean',
+        'wear_count'   => 'integer',
     ];
 
     

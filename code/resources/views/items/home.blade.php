@@ -71,19 +71,35 @@
           object-fit:cover;          /* はみ出しをトリミング */
           display:block;
         }
+        .card{
+          border-radius:12px;
+          overflow:hidden;
+          background:#fff;
+          box-shadow:0 1px 6px rgba(0,0,0,.06)
+        }
+        .thumb{
+            width:100%;
+            aspect-ratio:1/1;object-fit:cover;
+            display:block
+        }
+        
         @media (max-width:576px){ .item-grid{ grid-template-columns:repeat(3,1fr); } }
         @media (min-width:577px) and (max-width:992px){ .item-grid{ grid-template-columns:repeat(5,1fr); } }
       </style>
       
       <div class="item-grid">
         @foreach ($items as $item)
-          <div class="item-card">
+          <a class="card block" href="{{ route('items.show', $item) }}">
+            <img src="{{ $item->image ? asset('storage/'.$item->image) : asset('images/no_image.png') }}"
+                alt="{{ $item->brand }}" class="thumb"/>
+          </a>
+          {{-- <div class="item-card">
             @if ($item->image)
               <img src="{{ asset('storage/'.$item->image) }}" alt="{{ $item->brand }}">
             @else
               <img src="{{ asset('images/no_image.png') }}" alt="no image">
             @endif
-          </div>
+          </div> --}}
         @endforeach
       </div>
     {{-- フッターに被らないためのスペース --}}

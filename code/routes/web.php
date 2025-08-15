@@ -26,3 +26,7 @@ Route::get('/items/clear-selected-colors', function () {
 Route::post('/items/store-category-selection', [ItemController::class, 'storeCategorySelection'])->name('items.storeCategorySelection');
 // いま入力している内容をセッションに保存するAPI
 Route::post('/items/save-draft', [ItemController::class, 'saveDraft'])->name('items.saveDraft');
+Route::get('/items/{item}',        [ItemController::class, 'show'])->name('items.show');
+Route::get('/items/{item}/edit',   [ItemController::class, 'edit'])->name('items.edit');
+Route::put('/items/{item}',        [ItemController::class, 'update'])->name('items.update');
+Route::delete('/items/{item}',     [ItemController::class, 'destroy'])->name('items.destroy');

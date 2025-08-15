@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Item;
 use App\Models\Color;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Category;
+
 
 class ItemController extends Controller
 {
@@ -31,8 +34,20 @@ class ItemController extends Controller
     }
 
     // 洋服新規登録
-    public function create()
+    public function create(Request $request)
     {
+        // セレクト画面から戻るときだけ flash('from_selector', true) を付けている前提
+        $fromSelector = $request->session()->pull('from_selector', false);
+
+        if (!$fromSelector) {
+            // ふつうに /items/create を開いたときは下書きと選択状態をクリア
+            $request->session()->forget([
+                'item_form',
+                'selected_categories',
+                'selected_colors',
+            ]);
+        }
+
         $selectedColorIds = session('selected_colors', []);
         $selectedColors = Color::whereIn('id', $selectedColorIds)->get();
         $draft            = session('item_draft', []);
@@ -58,14 +73,25 @@ class ItemController extends Controller
 
     public function selectCategory()
     {
-        $categories = ['トップス','ボトムス','ワンピース','アウター','セットアップ','バッグ','シューズ','アクセサリー','ファッション雑貨','その他'];
-        return view('items.select-category', compact('categories'));
+        // $categories = ['トップス','ボトムス','ワンピース','アウター','セットアップ','バッグ','シューズ','アクセサリー','ファッション雑貨','その他'];
+        // return view('items.select-category', compact('categories'));
+        $categories = Category::orderBy('name')->get(['id','name']);
+        $selected   = session('selected_categories', []);  // int[]
+        return view('items.select-category', compact('categories','selected'));
     }
 
     public function storeCategorySelection(Request $request)
     {
-        session(['selected_category' => $request->input('categories', [])]);
-        return redirect()->route('items.create');
+        // session(['selected_category' => $request->input('categories', [])]);
+        $ids = collect($request->input('categories', []))
+            ->map(fn($v)=>(int)$v)->filter()->values()->all();
+
+        session([
+            'selected_categories'   => $ids,
+            'item_form.categories'  => $ids,  // 下書き復元用
+        ]);
+
+        return redirect()->route('items.create')->with('from_selector', true);
     }
 
     public function selectColor()
@@ -80,37 +106,58 @@ class ItemController extends Controller
         // 1) バリデーション
         $data = $request->validate([
             'brand'        => ['nullable','string','max:50'],
+            // 'category'     => ['nullable','string','max:50'],
             'price'        => ['nullable','integer','min:0'],
             'season'       => ['nullable','in:春,夏,秋,冬'],
             'purchased_at' => ['nullable','date'],
             'status'       => ['required','in:出品しない,出品する,検討中'],
             'memo'         => ['nullable','string','max:1000'],
-            'image'        => ['nullable','image','max:5120'], // ← name="image" に対応
+            'wear_count'   => ['nullable','integer','min:0'],
+            'image'        => ['nullable','image','max:5120'],
+
+            'categories'   => ['array'],
+            'categories.*' => ['integer','exists:categories,id'],
+            'colors'       => ['array'],
+            'colors.*'     => ['integer','exists:colors,id'],
         ]);
     
         // 2) 外部キー
         $data['user_id'] = auth()->id() ?? 1;
+        $data['wear_count'] = $data['wear_count'] ?? 0; // 未入力なら 0
     
         // 3) 画像アップロード（ここで $data['image'] をセット）
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('items', 'public'); // items/xxxx.jpg
         }
     
+        // ←create には pivot 配列を渡さない
+        $categoryIds = $request->input('categories', session('selected_categories', []));
+        $colorIds    = $request->input('colors',     session('selected_colors', []));
+        unset($data['categories'], $data['colors']);
+
         // 4) 作成は「必ず」ここ。これより前に create() を呼ばない。
         $item = \App\Models\Item::create($data);
     
+        // カテゴリ / カラーを pivot 保存
+        if (!empty($categoryIds)) $item->categories()->sync($categoryIds);
+        if (!empty($colorIds))    $item->colors()->sync($colorIds);
+
         // （任意）カテゴリ
-        $selectedName = collect(session('selected_category', []))->first();
-        if ($selectedName) {
-            $categoryId = \App\Models\Category::where('name', $selectedName)->value('id');
-            if ($categoryId) {
-                $item->categories()->sync([$categoryId]);
-            }
-        }
-        $colorIds = $request->input('colors', session('selected_colors', []));
-        if (!empty($colorIds)) {
-            $item->colors()->sync($colorIds);
-        }
+        // $selectedName = collect(session('selected_category', []))->first();
+        // if ($selectedName) {
+        //     // $categoryId = \App\Models\Category::where('name', $selectedName)->value('id');
+        //     // if ($categoryId) {
+        //     //     $item->categories()->sync([$categoryId]);
+        //     // }
+        //     $categoryIds = $request->input('categories', session('selected_categories', []));
+        //     if (!empty($categoryIds)) {
+        //         $item->categories()->sync($categoryIds);
+        //     }
+        // }
+        // $colorIds = $request->input('colors', session('selected_colors', []));
+        // if (!empty($colorIds)) {
+        //     $item->colors()->sync($colorIds);
+        // }
     
         // 使い終わったらサーバ側の下書きと選択状態をクリア
         session()->forget(['item_form','item_draft','selected_category','selected_colors']); // ← 追加
@@ -122,7 +169,7 @@ class ItemController extends Controller
     public function storeColorSelection(Request $request)
     {
         session(['selected_colors' => $request->input('colors', [])]); // 送られてきた colors[]（IDの配列）をセッションに保存
-        return redirect()->route('items.create');
+        return redirect()->route('items.create')->with('from_selector', true);
     }
 
     // カテゴリ選択画面へ行く前に現在の入力値を保存
@@ -133,5 +180,64 @@ class ItemController extends Controller
     }
 
 
+    public function show(Item $item)
+    {
+        // 編集画面へ
+        $colors = $item->colors()->pluck('name'); // 表示用
+        return view('items.show', compact('item', 'colors'));
+    }
+
+    public function edit(Item $item)
+    {
+        // 既存値をフォームに入れる。選択済みカラーもチェック済みにする
+        $selectedColors = $item->colors()->pluck('id')->all();
+        $colors = Color::all();
+        return view('items.edit', compact('item','colors','selectedColors'));
+    }
+
+    public function update(\Illuminate\Http\Request $request, Item $item)
+    {
+        $data = $request->validate([
+            'brand'        => ['nullable','string','max:50'],
+            'price'        => ['nullable','integer','min:0'],
+            'season'       => ['nullable','in:春,夏,秋,冬,通年'],
+            'purchased_at' => ['nullable','date'],
+            'status'       => ['required','in:出品しない,出品する,検討中'],
+            'memo'         => ['nullable','string','max:1000'],
+            'image'        => ['nullable','image','max:5120'],
+            'colors'       => ['array'],
+            'colors.*'     => ['integer'],
+        ]);
+
+        // 画像差し替え
+        if ($request->hasFile('image')) {
+            if ($item->image) Storage::disk('public')->delete($item->image);
+            $data['image'] = $request->file('image')->store('items', 'public');
+        } else {
+            unset($data['image']);
+        }
+
+        $item->update($data);
+
+        // カラー多対多
+        $item->colors()->sync($request->input('colors', []));
+
+        return redirect()->route('items.show', $item)->with('success','更新しました');
+    }
+
+    public function destroy(Item $item)
+    {
+        // 画像削除
+        if ($item->image) Storage::disk('public')->delete($item->image);
+        // Pivotも自動で消える（外部キー/オンデリート設定が無いなら detach）
+        $item->colors()->detach();
+        $item->delete();
+
+        // 非同期(AJAX)想定
+        if (request()->wantsJson()) {
+            return response()->json(['ok' => true]);
+        }
+        return redirect()->route('items.home')->with('success','削除しました');
+    }
 }
 

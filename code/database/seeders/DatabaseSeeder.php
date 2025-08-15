@@ -26,8 +26,11 @@ class DatabaseSeeder extends Seeder
             'is_premium' => false,
         ]);
 
-        // カラーシーダーを呼び出す 
-        $this->call(ColorSeeder::class);
+        // カラー、カテゴリシーダーを呼び出す 
+        $this->call([
+            CategorySeeder::class,
+            ColorSeeder::class,
+        ]);
     }
     
 }
