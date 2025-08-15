@@ -27,14 +27,12 @@
     @csrf
 
     <div class="list-group mt-3">
-      @foreach($colors as $color)
-        <label class="list-group-item">
+      @foreach ($colors as $color)
+        <label class="d-block mb-2">
           <input type="checkbox"
-                 name="colors[]"
-                 value="{{ $color->id }}"
-                 class="form-check-input me-2"
-                 {{-- バリデーションで戻ってきた場合は old()、通常はセッション値で保持 --}}
-                 {{ in_array($color->id, old('colors', $selected ?? []), true) ? 'checked' : '' }}>
+                name="colors[]"
+                value="{{ $color->id }}"
+                {{ in_array($color->id, $selected ?? []) ? 'checked' : '' }}>
           {{ $color->name }}
         </label>
       @endforeach

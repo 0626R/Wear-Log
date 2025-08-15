@@ -35,7 +35,24 @@ class ItemController extends Controller
     {
         $selectedColorIds = session('selected_colors', []);
         $selectedColors = Color::whereIn('id', $selectedColorIds)->get();
+        $draft            = session('item_draft', []);
         return view('items.create', compact('selectedColors'));
+    }
+    // ドラフト保存（選択画面へ行く前にJSから呼ぶ）
+    public function saveDraft(Request $request)
+    {
+
+        // 保存したいフィールドだけ拾う
+        $draft = $request->only(['brand','price','season','purchased_at','status','memo']);
+        session(['item_form' => $draft]);
+        return response()->noContent();
+
+        // session([
+        //     'item_draft' => $request->only([
+        //         'brand','price','season','purchased_at','status','memo'
+        //     ])
+        // ]);
+        // return response()->noContent();
     }
 
 
@@ -95,9 +112,10 @@ class ItemController extends Controller
             $item->colors()->sync($colorIds);
         }
     
-        session()->forget(['selected_category','selected_colors']);
-    
-        return redirect()->route('items.home')->with('success', '登録完了');
+        // 使い終わったらサーバ側の下書きと選択状態をクリア
+        session()->forget(['item_form','item_draft','selected_category','selected_colors']); // ← 追加
+        return redirect()->route('items.home')->with('success','登録完了');
+
     }
 
 
@@ -106,6 +124,14 @@ class ItemController extends Controller
         session(['selected_colors' => $request->input('colors', [])]); // 送られてきた colors[]（IDの配列）をセッションに保存
         return redirect()->route('items.create');
     }
+
+    // カテゴリ選択画面へ行く前に現在の入力値を保存
+    public function goToCategorySelection(Request $request)
+    {
+        session()->put('item_form', $request->all());
+        return redirect()->route('items.selectCategory');
+    }
+
 
 }
 

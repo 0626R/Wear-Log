@@ -6,7 +6,7 @@
     <h2 class="text-center mb-2">アイテム登録</h2>
     <hr class="mb-4" style="width: 100%; height: 2px; background-color: black; margin: 0 auto;">
 
-    <form action="{{ route('items.store') }}" method="POST" enctype="multipart/form-data">
+    <form id="itemForm" action="{{ route('items.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
         <div class="row">
@@ -24,20 +24,22 @@
                 {{-- カテゴリ：画面遷移で選択 --}}
                 <div class="mb-3">
                     <label>カテゴリ</label><br>
-                    <a href="{{ route('items.selectCategory') }}" class="btn btn-outline-secondary">カテゴリを選択</a>
+                    <a href="{{ route('items.selectCategory') }}" class="btn btn-outline-secondary" onclick="event.preventDefault(); goAfterSaveDraft(this.href);">カテゴリを選択</a>
                     @if(session('selected_category'))
-                        <p class="mt-2">選択中: {{ implode('・', session('selected_category')) }}</p>
+                        <p class="mt-2">
+                            選択中: {{ implode(', ', session('selected_category')) }}
+                        </p>
                     @endif
                 </div>
                 <div class="mb-3">
                     <label>ブランド</label>
-                    <input type="text" name="brand" class="form-control">
+                    <input type="text" name="brand" class="form-control" value="{{ old('brand', data_get(session('item_form'), 'brand', '')) }}">
                 </div>
                 {{-- カラー：画面遷移で選択 --}}
                 <div class="mb-3">
                     <label>カラー</label><br>
                     {{-- <input type="text" name="color" class="form-control" value="{{ request('color') }}" readonly> --}}
-                    <a href="{{ route('items.selectColor') }}" class="btn btn-outline-secondary">カラーを選択</a>
+                    <a href="{{ route('items.selectColor') }}" class="btn btn-outline-secondary" onclick="event.preventDefault(); goAfterSaveDraft(this.href);">カラーを選択</a>
                     
                     @php
                         $selectedIds = session('selected_colors', []);
@@ -53,48 +55,42 @@
                         @endforeach
                     </p>
                     @endif
-
-
                 </div>
                 
                 <div class="mb-3">
                     <label>購入価格</label>
-                    <input type="number" name="price" class="form-control">
-                </div>
+                    <input type="number" name="price" class="form-control" value="{{ old('price', data_get(session('item_form'), 'price', '')) }}">
                 {{-- シーズン：ドロップダウンで選択 --}}
-                <div class="mb-3">
-                    <label>シーズン</label>
-                    <select name="season" class="form-control">
-                        <option value="">未選択</option>
-                        <option value="春">通年</option>
-                        <option value="春">春</option>
-                        <option value="夏">夏</option>
-                        <option value="秋">秋</option>
-                        <option value="冬">冬</option>
-                      </select>
+                    <div class="mb-3">
+                        <label>シーズン</label>
+                        <select name="season" class="form-control">
+                            @foreach(['春','夏','秋','冬', '通年'] as $s)
+                                <option value="{{ $s }}" @selected(old('season', data_get(session('item_form'), 'season')) === $s)>{{ $s }}</option>
+                            @endforeach
+                        </select>
                 </div>
                 
                 <div class="mb-3">
                     <label>購入日</label>
-                    <input type="date" name="purchase_date" class="form-control">
+                    <input type="date" name="purchased_at" class="form-control" value="{{ old('purchased_at', data_get(session('item_form'), 'purchased_at', '')) }}">
                 </div>
                 <div class="mb-3">
                     <label>出品状況</label>
                     <select name="status" class="form-control">
-                        <option value="出品する">出品する</option>
-                        <option value="出品しない">出品しない</option>
-                        <option value="検討中">検討中</option>
+                        @foreach(['出品しない','出品する','検討中'] as $st)
+                            <option value="{{ $st }}" @selected(old('status', data_get(session('item_form'), 'status')) === $st)>{{ $st }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="mb-3">
                     <label>メモ</label>
-                    <textarea name="memo" class="form-control" rows="2"></textarea>
+                    <textarea name="memo" class="form-control" rows="2">{{ old('memo', data_get(session('item_form'), 'memo', '')) }}</textarea>
                 </div>
+            </div>
             </div>
             <div class="col-12">
                 <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-dark w-50">完了</button>
-                </div>
+                <button type="submit" class="btn btn-dark w-50">完了</button>
             </div>
         </div>
     </form>
@@ -130,9 +126,71 @@
 
 <script>
     document.getElementById('imageInput').addEventListener('change', (e) => {
-      const [file] = e.target.files;
-      if (!file) return;
-      const url = URL.createObjectURL(file);
-      document.getElementById('preview').src = url;
+        const [file] = e.target.files;
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        document.getElementById('preview').src = url;
+        });
+
+
+    // 保存するフィールド名を列挙
+    const FIELDS = ['brand', 'price', 'season', 'purchased_at', 'status', 'memo'];
+  
+    // 入力値を localStorage へ
+    function saveDraft() {
+      const obj = {};
+      FIELDS.forEach(name => {
+        const el = document.querySelector(`[name="${name}"]`);
+        if (el) obj[name] = el.value ?? '';
+      });
+      localStorage.setItem('item_draft', JSON.stringify(obj));
+    }
+  
+    // localStorage から復元
+    function restoreDraft() {
+      const raw = localStorage.getItem('item_draft');
+      if (!raw) return;
+      try {
+        const obj = JSON.parse(raw);
+        FIELDS.forEach(name => {
+          const el = document.querySelector(`[name="${name}"]`);
+          if (el && obj[name] != null) el.value = obj[name];
+        });
+      } catch (e) {}
+    }
+  
+    // 入力のたびに自動保存
+    document.addEventListener('input', (e) => {
+      if (FIELDS.includes(e.target.name)) saveDraft();
+    });
+  
+    // 初期表示で復元
+    document.addEventListener('DOMContentLoaded', restoreDraft);
+  
+    // フォーム送信時に下書きを消す（送信後は不要なので）
+    document.getElementById('itemForm').addEventListener('submit', () => {
+      localStorage.removeItem('item_draft');
     });
   </script>
+
+<script>
+    async function goAfterSaveDraft(url){
+      const form = document.getElementById('itemForm');
+      const fd   = new FormData(form);
+      await fetch('{{ route('items.saveDraft') }}', {
+        method: 'POST',
+        headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+        body: fd
+      });
+      location.href = url;
+    }
+    
+    document.getElementById('btnCategory')
+      .addEventListener('click', () => goAfterSaveDraft('{{ route('items.selectCategory') }}'));
+    
+    document.getElementById('btnColor')
+      .addEventListener('click', () => goAfterSaveDraft('{{ route('items.selectColor') }}'));
+
+
+      
+    </script>

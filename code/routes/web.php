@@ -23,3 +23,6 @@ Route::get('/items/clear-selected-colors', function () {
     session()->forget('selected_colors');
     return redirect()->route('items.selectColor');
 })->name('items.clearSelectedColors');
+Route::post('/items/store-category-selection', [ItemController::class, 'storeCategorySelection'])->name('items.storeCategorySelection');
+// いま入力している内容をセッションに保存するAPI
+Route::post('/items/save-draft', [ItemController::class, 'saveDraft'])->name('items.saveDraft');
