@@ -192,7 +192,14 @@ class ItemController extends Controller
         // 既存値をフォームに入れる。選択済みカラーもチェック済みにする
         $selectedColors = $item->colors()->pluck('id')->all();
         $colors = Color::all();
-        return view('items.edit', compact('item','colors','selectedColors'));
+        $categories = Category::orderBy('name')->get(['id','name']);
+
+        $selectedCategories = $item->categories()->pluck('id')->all();
+
+        return view('items.edit', compact(
+            'item', 'colors', 'selectedColors',
+            'categories', 'selectedCategories'
+        ));
     }
 
     public function update(\Illuminate\Http\Request $request, Item $item)
@@ -207,6 +214,9 @@ class ItemController extends Controller
             'image'        => ['nullable','image','max:5120'],
             'colors'       => ['array'],
             'colors.*'     => ['integer'],
+            'categories'   => ['array'],
+            'categories.*' => ['integer','exists:categories,id'],
+
         ]);
 
         // 画像差し替え
@@ -221,6 +231,9 @@ class ItemController extends Controller
 
         // カラー多対多
         $item->colors()->sync($request->input('colors', []));
+
+        $item->categories()->sync($request->input('categories', []));
+
 
         return redirect()->route('items.show', $item)->with('success','更新しました');
     }

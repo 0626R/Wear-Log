@@ -118,82 +118,31 @@
         </div>
     </form>
 
+    <script>
+        // カメラアイコンを差し替えて写真にする
+        document.addEventListener('DOMContentLoaded', () => {
+          const input   = document.getElementById('imageInput');
+          const preview = document.getElementById('preview');
+      
+          if (!input || !preview) return; 
+      
+          input.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+      
+            preview.src = URL.createObjectURL(file);
+          });
+        });
+      </script>
+
     {{-- フッターに被らないためのスペース --}}
     <div style="height: 96px;"></div>
 </div>
 
-{{-- @section('scripts')
-<script>
-    window.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('imageInput').click();
-
-        // 画像プレビュー表示
-        const input = document.getElementById('imageInput');
-        const preview = document.getElementById('preview');
-
-        input.addEventListener('change', () => {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    preview.src = e.target.result;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        });
-    });
-</script>
-@endsection --}}
-
-
 @endsection
 
 <script>
-    document.getElementById('imageInput').addEventListener('change', (e) => {
-        const [file] = e.target.files;
-        if (!file) return;
-        const url = URL.createObjectURL(file);
-        document.getElementById('preview').src = url;
-        });
 
-
-    // // 保存するフィールド名を列挙
-    // const FIELDS = ['brand', 'price', 'season', 'purchased_at', 'status', 'memo'];
-  
-    // 入力値を localStorage へ
-    // function saveDraft() {
-    //   const obj = {};
-    //   FIELDS.forEach(name => {
-    //     const el = document.querySelector(`[name="${name}"]`);
-    //     if (el) obj[name] = el.value ?? '';
-    //   });
-    //   localStorage.setItem('item_draft', JSON.stringify(obj));
-    // }
-  
-    // // localStorage から復元
-    // function restoreDraft() {
-    //   const raw = localStorage.getItem('item_draft');
-    //   if (!raw) return;
-    //   try {
-    //     const obj = JSON.parse(raw);
-    //     FIELDS.forEach(name => {
-    //       const el = document.querySelector(`[name="${name}"]`);
-    //       if (el && obj[name] != null) el.value = obj[name];
-    //     });
-    //   } catch (e) {}
-    // }
-  
-    // // 入力のたびに自動保存
-    // document.addEventListener('input', (e) => {
-    //   if (FIELDS.includes(e.target.name)) saveDraft();
-    // });
-  
-    // // 初期表示で復元
-    // document.addEventListener('DOMContentLoaded', restoreDraft);
-  
-    // // フォーム送信時に下書きを消す（送信後は不要なので）
-    // document.getElementById('itemForm').addEventListener('submit', () => {
-    //   localStorage.removeItem('item_draft');
-    // });
 
     // サーバ側 flash を Blade で埋め込み
     const FROM_SELECTOR = {{ session('from_selector') ? 'true' : 'false' }};

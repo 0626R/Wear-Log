@@ -13,10 +13,10 @@
       'selectedColors' => $selectedColors,
     ])
 
-    <div class="text-center mt-4">
+    {{-- <div class="text-center mt-4">
       <button type="submit" class="btn btn-dark px-5">更新</button>
     </div>
-  </form>
+  </form> --}}
 
     {{-- フッターに被らないためのスペース --}}
     <div style="height: 96px;"></div>

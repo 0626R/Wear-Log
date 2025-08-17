@@ -16,7 +16,7 @@
     @yield('content')
 
     {{-- 共通ナビゲーションバー（フッター） --}}
-    <nav class="footer-nav">
+    <nav class="footer-nav fixed-bottom bg-white border-top">
         <a href="{{ route('items.home') }}" class="footer-link">
             <img src="{{ asset('images/icon_home.png') }}" alt="ホーム">
             ホーム
