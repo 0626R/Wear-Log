@@ -6,17 +6,28 @@
     <h2 class="text-center mb-2">アイテム登録</h2>
     <hr class="mb-4" style="width: 100%; height: 2px; background-color: black; margin: 0 auto;">
 
+
     <form id="itemForm" action="{{ route('items.store') }}" method="POST" enctype="multipart/form-data">
-        @csrf
+    @csrf
 
         <div class="row">
             {{-- 左側：画像登録 --}}
             <div class="col-md-4 text-center">
-                <label for="imageInput" style="cursor: pointer;">
+                @php
+                $tmp = data_get(session('item_form'),'image_tmp');
+                $previewSrc = $tmp ? asset('storage/'.$tmp) : asset('images/icon_camera.png');
+                @endphp
+                <label for="imageInput" style="cursor:pointer;">
+                    <img id="preview" src="{{ $previewSrc }}" alt="画像" style="width:100%;max-width:150px;height:auto;border:1px solid #ccc;padding:10px;">
+                    <p class="mt-2">画像を選択</p>
+                </label>
+                <input type="file" id="imageInput" name="image" accept="image/*" style="display:none">
+                <input type="hidden" name="image_tmp" value="{{ $tmp }}">
+                {{-- <label for="imageInput" style="cursor: pointer;">
                     <img id="preview" src="{{ asset('images/icon_camera.png') }}" alt="画像登録" style="width:100%; max-width:150px; height:auto; border:1px solid #ccc; padding: 10px;">
                     <p class="mt-2">画像を選択</p>
                 </label>
-                <input type="file" id="imageInput" name="image" accept="image/*" style="display: none;">
+                <input type="file" id="imageInput" name="image" accept="image/*" style="display: none;"> --}}
             </div>
 
             {{-- 右側：入力欄 --}}
@@ -167,10 +178,6 @@
     
     document.getElementById('btnCategory')
       .addEventListener('click', () => goAfterSaveDraft('{{ route('items.selectCategory') }}'));
-    
-    document.getElementById('btnColor')
-      .addEventListener('click', () => goAfterSaveDraft('{{ route('items.selectColor') }}'));
-
 
       
     </script>

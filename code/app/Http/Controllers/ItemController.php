@@ -57,17 +57,27 @@ class ItemController extends Controller
     public function saveDraft(Request $request)
     {
 
-        // 保存したいフィールドだけ拾う
-        $draft = $request->only(['brand','price','season','purchased_at','status','memo']);
-        session(['item_form' => $draft]);
-        return response()->noContent();
+        // 既存のテキスト系
+        $draft = $request->only(['brand','price','season','purchased_at','status','memo','wear_count','categories','colors']);
 
-        // session([
-        //     'item_draft' => $request->only([
-        //         'brand','price','season','purchased_at','status','memo'
-        //     ])
-        // ]);
-        // return response()->noContent();
+        // 画像を一時保存（public/tmp）
+        if ($request->hasFile('image')) {
+            if ($old = session('item_form.image_tmp')) {
+                Storage::disk('public')->delete($old);
+            }
+            $draft['image_tmp'] = $request->file('image')->store('tmp', 'public');
+        } else {
+            // 画像未選択なら既存の一時画像を維持
+            $draft['image_tmp'] = session('item_form.image_tmp');
+        }
+
+        // 既存のドラフトにマージして保存
+        session(['item_form' => array_merge(session('item_form', []), $draft)]);
+
+        // 選択画面から戻ったことを示すフラグ（任意）
+        session()->flash('from_selector', true);
+
+        return response()->noContent();
     }
 
 
@@ -108,7 +118,7 @@ class ItemController extends Controller
             'brand'        => ['nullable','string','max:50'],
             // 'category'     => ['nullable','string','max:50'],
             'price'        => ['nullable','integer','min:0'],
-            'season'       => ['nullable','in:春,夏,秋,冬'],
+            'season'       => ['nullable','in:春,夏,秋,冬,通年'],
             'purchased_at' => ['nullable','date'],
             'status'       => ['required','in:出品しない,出品する,検討中'],
             'memo'         => ['nullable','string','max:1000'],
@@ -122,8 +132,20 @@ class ItemController extends Controller
         ]);
     
         // 2) 外部キー
-        $data['user_id'] = auth()->id() ?? 1;
+        // $data['user_id'] = auth()->id() ?? 1;
+        // $data['wear_count'] = $data['wear_count'] ?? 0; // 未入力なら 0
+
+        $data['user_id']    = auth()->id() ?? 1;
         $data['wear_count'] = $data['wear_count'] ?? 0; // 未入力なら 0
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('items','public');
+        } elseif ($tmp = $request->input('image_tmp', data_get(session('item_form'),'image_tmp'))) {
+            // tmp から items/ へ移動して採用
+            $new = 'items/'.basename($tmp);
+            Storage::disk('public')->move($tmp, $new);
+            $data['image'] = $new;
+        }
     
         // 3) 画像アップロード（ここで $data['image'] をセット）
         if ($request->hasFile('image')) {
@@ -160,7 +182,7 @@ class ItemController extends Controller
         // }
     
         // 使い終わったらサーバ側の下書きと選択状態をクリア
-        session()->forget(['item_form','item_draft','selected_category','selected_colors']); // ← 追加
+        session()->forget(['item_form','selected_categories','selected_colors']);
         return redirect()->route('items.home')->with('success','登録完了');
 
     }

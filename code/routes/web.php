@@ -5,6 +5,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\MypageController;
+use App\Http\Controllers\WeatherController;
 
 
 // "/" にアクセスしたら、ItemController の home メソッドを呼ぶ
@@ -31,3 +32,4 @@ Route::get('/items/{item}/edit',   [ItemController::class, 'edit'])->name('items
 Route::put('/items/{item}',        [ItemController::class, 'update'])->name('items.update');
 Route::delete('/items/{item}',     [ItemController::class, 'destroy'])->name('items.destroy');
 Route::resource('items', ItemController::class);
+Route::get('/weather', [WeatherController::class, 'index'])->name('weather.index');
