@@ -1,89 +1,36 @@
 <!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>@yield('title', 'WearLog')</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    {{-- Bootstrap CDNやCSSの読み込み --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .navbar-bottom { position: fixed; bottom: 0; width: 100%; background: #fff; }
-        .fab { position: fixed; bottom: 80px; right: 20px; background: #d97e75; border-radius: 50%; padding: 15px; color: white; }
-    </style>
-</head>
-<body>
-    {{-- ↓home.blade.php）の内容がここに入る --}}
-    @yield('content')
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- 共通ナビゲーションバー（フッター） --}}
-    <nav class="footer-nav fixed-bottom bg-white border-top">
-        <a href="{{ route('items.home') }}" class="footer-link">
-            <img src="{{ asset('images/icon_home.png') }}" alt="ホーム">
-            ホーム
-        </a>
-        <a href="{{ route('calendar') }}" class="footer-link">
-            <img src="{{ asset('images/icon_calendar.png') }}" alt="カレンダー">
-            カレンダー
-        </a>
-        <a href="{{ route('statistics') }}" class="footer-link">
-            <img src="{{ asset('images/icon_graph.png') }}" alt="統計">
-            統計
-        </a>
-        <a href="{{ route('mypage') }}" class="footer-link">
-            <img src="{{ asset('images/icon_mypage.png') }}" alt="マイページ">
-            その他
-        </a>
-    </nav>
+        <title>{{ config('app.name', 'Laravel') }}</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+        <!-- Scripts -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
+    <body class="font-sans antialiased">
+        <div class="min-h-screen bg-gray-100">
+            @include('layouts.navigation')
 
-    <a href="{{ route('items.create') }}" class="fab">
-        <img src="{{ asset('images/icon_camera.png') }}" alt="洋服登録" style="height: 40px;">
-    </a>
-    
+            <!-- Page Heading -->
+            @isset($header)
+                <header class="bg-white shadow">
+                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                </header>
+            @endisset
 
-</body>
+            <!-- Page Content -->
+            <main>
+                {{ $slot }}
+            </main>
+        </div>
+    </body>
 </html>
-
-<style>
-    .footer-nav {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        background-color: white;
-        border-top: 1px solid #ddd;
-        display: flex;
-        justify-content: space-around;
-        padding: 8px 0;
-        z-index: 1000;
-    }
-
-    .footer-link {
-        text-align: center;
-        text-decoration: none;
-        color: #b65e59; /* くすみピンク系 */
-        font-size: 13px;
-    }
-
-    .footer-link img {
-        display: block;
-        margin: 0 auto 4px;
-        height: 35px;
-    }
-
-    .footer-link:hover {
-        color: #a54f4a;
-    }
-
-    .fab {
-        position: fixed;
-        bottom: 60px;
-        right: 20px;
-        background-color: #d97e75;
-        border-radius: 50%;
-        padding: 16px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        z-index: 1100;
-    }
-</style>
