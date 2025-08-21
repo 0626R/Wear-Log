@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -58,24 +59,49 @@ class UnifiedAuthController extends Controller
         return view('auth.register'); 
     }
 
-    public function register(Request $req)
+    public function register(\Illuminate\Http\Request $request)
     {
-        $data = $req->validate([
-            'email'                 => ['required','email','unique:users,email'],
-            'password'              => ['required','min:8','confirmed'],
-            'last_name'             => ['nullable','max:50'],
-            'first_name'            => ['nullable','max:50'],
+        $data = $request->validate([
+            'last_name'        => ['required','string','max:50'],
+            'first_name'       => ['required','string','max:50'],
+            'last_name_kana'   => ['nullable','string','max:50'],
+            'first_name_kana'  => ['nullable','string','max:50'],
+            'email'            => ['required','string','email','max:100', Rule::unique('users','email')],
+            'password'         => ['required','string','min:8','confirmed'],
         ]);
 
         $user = User::create([
-            'email'      => $data['email'],
-            'password'   => Hash::make($data['password']),
-            'last_name'  => $data['last_name'] ?? null,
-            'first_name' => $data['first_name'] ?? null,
-            'is_premium' => false, // 初期は一般
+            'last_name'       => $data['last_name'],
+            'first_name'      => $data['first_name'],
+            'last_name_kana'  => $data['last_name_kana'] ?? null,
+            'first_name_kana' => $data['first_name_kana'] ?? null,
+            'email'           => $data['email'],
+            'password'        => Hash::make($data['password']),
+            'is_premium'      => 0, // 既定を一般会員に
         ]);
 
-        // 登録後はログイン画面へ
-        return redirect()->route('login')->with('status','登録が完了しました。ログインしてください。');
+        Auth::login($user); // そのままログイン
+        return redirect()->route('items.home')->with('success','登録しました');
     }
+
+    // public function register(Request $req)
+    // {
+    //     $data = $req->validate([
+    //         'email'                 => ['required','email','unique:users,email'],
+    //         'password'              => ['required','min:8','confirmed'],
+    //         'last_name'             => ['nullable','max:50'],
+    //         'first_name'            => ['nullable','max:50'],
+    //     ]);
+
+    //     $user = User::create([
+    //         'email'      => $data['email'],
+    //         'password'   => Hash::make($data['password']),
+    //         'last_name'  => $data['last_name'] ?? null,
+    //         'first_name' => $data['first_name'] ?? null,
+    //         'is_premium' => false, // 初期は一般
+    //     ]);
+
+    //     // 登録後はログイン画面へ
+    //     return redirect()->route('login')->with('status','登録が完了しました。ログインしてください。');
+    // }
 }

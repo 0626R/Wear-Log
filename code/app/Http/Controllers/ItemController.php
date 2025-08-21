@@ -22,11 +22,18 @@ class ItemController extends Controller
         $selectedCategory = $request->input('category', 'すべて');
 
         // アイテム取得（カテゴリで絞り込み）
-    $items = \App\Models\Item::with('categories')
+    // $items = \App\Models\Item::with('categories')
+    //     ->when($selectedCategory !== 'すべて', function ($q) use ($selectedCategory) {
+    //         $q->whereHas('categories', function ($qq) use ($selectedCategory) {
+    //             $qq->where('name', $selectedCategory);
+    //         });
+    //     })
+    //     ->get();
+
+        $items = \App\Models\Item::with('categories')
+        ->where('user_id', auth()->id())
         ->when($selectedCategory !== 'すべて', function ($q) use ($selectedCategory) {
-            $q->whereHas('categories', function ($qq) use ($selectedCategory) {
-                $qq->where('name', $selectedCategory);
-            });
+            $q->whereHas('categories', fn($qq) => $qq->where('name', $selectedCategory));
         })
         ->get();
 
@@ -131,9 +138,6 @@ class ItemController extends Controller
             'colors.*'     => ['integer','exists:colors,id'],
         ]);
     
-        // 2) 外部キー
-        // $data['user_id'] = auth()->id() ?? 1;
-        // $data['wear_count'] = $data['wear_count'] ?? 0; // 未入力なら 0
 
         $data['user_id']    = auth()->id() ?? 1;
         $data['wear_count'] = $data['wear_count'] ?? 0; // 未入力なら 0

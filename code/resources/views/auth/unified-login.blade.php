@@ -1,6 +1,8 @@
-@extends('layouts.guest')
+{{-- @extends('layouts.guest')
 
-@section('content')
+@section('content') --}}
+<x-guest-layout>
+
 <div class="min-h-screen flex items-center justify-center">
   <div class="w-full max-w-md bg-white shadow rounded p-6">
     <h1 class="text-xl font-bold mb-4">ログイン</h1>
@@ -34,4 +36,5 @@
     </div>
   </div>
 </div>
-@endsection
+{{-- @endsection --}}
+</x-guest-layout>

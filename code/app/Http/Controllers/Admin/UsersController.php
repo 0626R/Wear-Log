@@ -20,4 +20,10 @@ class UsersController extends Controller
         $user->delete();
         return back()->with('success','ユーザーを削除しました');
     }
+
+    public function others()
+    {
+        $user = Auth::user(); // ログイン中のユーザー情報を取得
+        return view('users.others', compact('user'));
+    }
 }

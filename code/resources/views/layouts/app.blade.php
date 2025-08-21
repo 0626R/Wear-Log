@@ -29,7 +29,13 @@
 
             <!-- Page Content -->
             <main>
-                {{ $slot }}
+                @isset($slot)
+                    {{-- コンポーネント(<x-app-layout>)で使われた場合 --}}
+                    {{ $slot }}
+                @else
+                    {{-- 継承(@extends)で使われた場合 --}}
+                    @yield('content')
+                @endisset
             </main>
         </div>
     </body>

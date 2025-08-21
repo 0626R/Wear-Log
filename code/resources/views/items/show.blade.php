@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.wearlog')
 
 @section('content')
 <div class="container mt-4 pb-5">

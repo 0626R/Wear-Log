@@ -27,11 +27,11 @@ use App\Http\Controllers\Admin\UserAdminController;
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Route::middleware('auth')->group(function () {
-//     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-//     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-//     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-// });
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
 
 // // 一般ユーザーのホーム
 // Route::get('/home', fn() => redirect()->route('items.home'))->name('home');
@@ -71,6 +71,8 @@ Route::post('/register', [UnifiedAuthController::class, 'register'])->name('regi
 Route::middleware('auth')->group(function () {
     Route::get('/home', fn() => redirect()->route('items.home'))->name('home');
     Route::get('/items', [ItemController::class, 'home'])->name('items.home');
+    Route::get('/items/filter', [ItemController::class, 'filter'])->name('items.filter');
+
 });
 
 // ⑤ 管理者（admin）
@@ -78,3 +80,52 @@ Route::prefix('admin')->name('admin.')->middleware('auth:admin')->group(function
     Route::get('/dashboard', [UserAdminController::class, 'index'])->name('dashboard');
     Route::delete('/users/{user}', [UserAdminController::class, 'destroy'])->name('users.destroy');
 });
+
+Route::middleware('auth')->group(function () {
+    Route::get('/items', [ItemController::class,'home'])->name('items.home');
+    Route::get('/items/create', [ItemController::class,'create'])->name('items.create');
+    Route::post('/items', [ItemController::class,'store'])->name('items.store');
+});
+
+Route::view('/calendar', 'stubs.calendar')->name('calendar');
+Route::view('/statistics', 'stubs.statistics')->name('statistics');
+Route::view('/mypage', 'stubs.mypage')->name('mypage');
+
+Route::get('/items', [\App\Http\Controllers\ItemController::class,'home'])->name('items.home');
+Route::get('/items/create', [\App\Http\Controllers\ItemController::class,'create'])->name('items.create');
+
+// カテゴリ選択画面を表示
+Route::get('/items/select-category', [ItemController::class, 'selectCategory'])
+    ->name('items.selectCategory');
+
+// カテゴリ選択を保存（POST）
+Route::post('/items/select-category', [ItemController::class, 'storeCategorySelection'])
+    ->name('items.storeCategorySelection');
+
+    Route::get('/items/select-color', [ItemController::class, 'selectColor'])->name('items.selectColor');
+    Route::post('/items/store-color-selection', [ItemController::class, 'storeColorSelection'])->name('items.storeColorSelection');
+
+    // いま入力している内容をセッションに保存するAPI
+Route::post('/items/save-draft', [ItemController::class, 'saveDraft'])->name('items.saveDraft');
+
+Route::get('/items/clear-selected-colors', function () {
+    session()->forget('selected_colors');
+    return redirect()->route('items.selectColor');
+})->name('items.clearSelectedColors');
+
+Route::get('/items/{item}',        [ItemController::class, 'show'])->name('items.show');
+
+Route::get('/items/{item}',        [ItemController::class, 'show'])->name('items.show');
+Route::get('/items/{item}/edit',   [ItemController::class, 'edit'])->name('items.edit');
+Route::put('/items/{item}',        [ItemController::class, 'update'])->name('items.update');
+Route::delete('/items/{item}',     [ItemController::class, 'destroy'])->name('items.destroy');
+Route::delete('/items/{item}',     [ItemController::class, 'destroy'])->name('items.destroy');
+
+
+Route::get('/others', [UserController::class, 'others'])->name('others');
+
+// ログアウト用
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('/login');
+})->name('logout');

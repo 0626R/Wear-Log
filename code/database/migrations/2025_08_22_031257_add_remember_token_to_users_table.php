@@ -12,9 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            if (!Schema::hasColumn('users', 'is_premium')) {
-                $table->boolean('is_premium')->default(false)->after('password');
-            }
+            $table->rememberToken()->nullable()->after('password');
         });
     }
 
@@ -24,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('is_premium');
+            $table->dropColumn('remember_token');
         });
     }
 };

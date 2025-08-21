@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use App\Providers\RouteServiceProvider;
 
 class RegisteredUserController extends Controller
 {
@@ -39,14 +40,17 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'is_premium' => (bool) $request->boolean('is_premium'),
+            // 'is_premium' => (bool) $request->boolean('is_premium'),
+            'is_premium' => false,
         ]);
 
         event(new Registered($user));
 
-        // Auth::login($user);
+        // 自動ログイン
+        Auth::login($user);
 
-        return redirect()->route('login')
+        // 登録→ログイン画面に戻す
+        return redirect()->route('login')->with('status', 'registered');
         ->with('status', '登録が完了しました。ログインしてください。');
 
         // return redirect(route('dashboard', absolute: false));
