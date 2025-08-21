@@ -57,4 +57,15 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+    public function show()
+    {
+        if (Auth::guard('admin')->check()) {
+            $actor = Auth::guard('admin')->user();
+            $type  = 'admin';
+        } else {
+            $actor = Auth::guard('web')->user(); // 一般/プレミアム
+            $type  = 'user';
+        }
+        return view('users.others', compact('actor', 'type'));
+    }
 }

@@ -14,7 +14,7 @@
       <div class="mb-3 text-red-600">{{ $message }}</div>
     @enderror
 
-    <form method="POST" action="{{ route('login.post') }}">
+    <form method="POST" action="{{ route('login.attempt') }}">
       @csrf
       <label class="block mb-2 text-sm">メールアドレス</label>
       <input name="email" type="email" class="w-full border rounded px-3 py-2 mb-4"

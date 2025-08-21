@@ -14,7 +14,7 @@
       統計
     </a>
   
-    <a href="{{ route('mypage') }}" class="wl-link">
+    <a href="{{ route('others') }}" class="wl-link">
       <img src="{{ asset('images/icon_mypage.png') }}" alt="その他">
       その他
     </a>

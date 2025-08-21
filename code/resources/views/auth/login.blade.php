@@ -35,13 +35,16 @@
 </div>
 @endsection --}}
 
-<x-guest-layout>
+{{-- <x-guest-layout>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login.post') }}">
+    <form method="POST" action="{{ route('login.attempt') }}">
         @csrf
-
+        <input type="email" name="email" value="{{ old('email') }}" required autofocus>
+        <input type="password" name="password" required>
+        <label><input type="checkbox" name="remember"> Remember me</label>
+        <button type="submit">ログイン</button>
         <!-- Email Address -->
         <div>
             <x-input-label for="email" :value="__('Email')" />
@@ -78,6 +81,51 @@
 
             <x-primary-button class="ms-3">
                 {{ __('Log in') }}
+            </x-primary-button>
+        </div>
+    </form>
+</x-guest-layout> --}}
+
+<x-guest-layout>
+    <x-auth-session-status class="mb-4" :status="session('status')" />
+
+    <form method="POST" action="{{ route('login.attempt') }}">
+        @csrf
+
+        <!-- Email -->
+        <div>
+            <x-input-label for="email" :value="__('メールアドレス')" />
+            <x-text-input id="email" class="block mt-1 w-full"
+                type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        </div>
+
+        <!-- Password -->
+        <div class="mt-4">
+            <x-input-label for="password" :value="__('パスワード')" />
+            <x-text-input id="password" class="block mt-1 w-full"
+                type="password" name="password" required autocomplete="current-password" />
+            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        </div>
+
+        <!-- Remember -->
+        <div class="block mt-4">
+            <label for="remember_me" class="inline-flex items-center">
+                <input id="remember_me" type="checkbox"
+                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                    name="remember">
+                <span class="ms-2 text-sm text-gray-600">ログイン状態を保持</span>
+            </label>
+        </div>
+
+        <div class="flex items-center justify-end mt-4">
+            @if (Route::has('register'))
+                <a class="underline text-sm text-gray-600 hover:text-gray-900" href="{{ route('register') }}">
+                    新規会員登録
+                </a>
+            @endif
+            <x-primary-button class="ms-3">
+                {{ __('ログインする') }}
             </x-primary-button>
         </div>
     </form>

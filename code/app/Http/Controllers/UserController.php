@@ -4,8 +4,28 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+
+
 class UserController extends Controller
 {
+
+    // 会員情報ページ
+    public function profile()
+    {
+        $user = Auth::user();
+        return view('user.profile', compact('user'));
+    }
+
+    // ログアウト
+    public function logout()
+    {
+        Auth::logout();
+        return redirect('/')->with('status', 'ログアウトしました');
+    }
     /**
      * Display a listing of the resource.
      */
