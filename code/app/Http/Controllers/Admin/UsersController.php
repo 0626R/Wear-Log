@@ -9,9 +9,15 @@ use App\Models\User;
 
 class UsersController extends Controller
 {
+    public function index()
+    {
+        $users = User::latest()->paginate(10);
+        return view('admin.users.index', compact('users'));
+    }
+
     public function destroy(User $user)
     {
         $user->delete();
-        return back()->with('status','削除しました');
+        return back()->with('success','ユーザーを削除しました');
     }
 }

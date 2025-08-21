@@ -1,9 +1,26 @@
-@extends('layouts.app')
+{{-- <!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><title>管理者ログイン</title></head>
+<body>
+  <h1>管理者ログイン</h1>
+  @if($errors->any()) <div style="color:red">{{ $errors->first() }}</div> @endif
+  <form method="POST" action="{{ route('admin.login.post') }}">
+    @csrf
+    <label>Email</label><input type="email" name="email" required><br>
+    <label>Password</label><input type="password" name="password" required><br>
+    <label><input type="checkbox" name="remember"> Remember</label><br>
+    <button type="submit">ログイン</button>
+  </form>
+</body>
+</html> --}}
+
+
+{{-- @extends('layouts.guest')
 
 @section('content')
 <div class="container" style="max-width:420px;">
   <h3 class="mb-3">管理者ログイン</h3>
-  <form method="POST" action="{{ route('admin.login') }}">
+  <form method="POST" action="{{ route('login.post') }}">
     @csrf
     <div class="mb-3">
       <label class="form-label">メールアドレス</label>
@@ -16,13 +33,13 @@
     <button class="btn btn-dark w-100">ログイン</button>
   </form>
 </div>
-@endsection
+@endsection --}}
 
 <x-guest-layout>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login.post') }}">
         @csrf
 
         <!-- Email Address -->

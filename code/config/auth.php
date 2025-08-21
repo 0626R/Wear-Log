@@ -40,7 +40,7 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
-            'admin' => [                     // 追加
+        'admin' => [                     // 追加
             'driver' => 'session',
             'provider' => 'admins',
         ],
@@ -68,7 +68,7 @@ return [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
-            'admins' => [                    // 追加
+        'admins' => [                    // 追加
             'driver' => 'eloquent',
             'model'  => App\Models\Admin::class,
         ],

@@ -4,6 +4,14 @@
 <div class="container">
   <h3 class="mb-4">管理画面｜ユーザー一覧</h3>
 
+  <form method="POST" action="{{ route('admin.logout') }}">
+    @csrf
+    <button type="submit">ログアウト</button>
+  </form>
+</div>
+@endsection
+
+
   @if(session('status'))
     <div class="alert alert-success">{{ session('status') }}</div>
   @endif
