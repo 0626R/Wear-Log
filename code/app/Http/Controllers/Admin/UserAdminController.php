@@ -13,8 +13,7 @@ class UserAdminController extends Controller
     public function index()
     {
         $users = User::orderByDesc('id')->paginate(15);
-        return view('admin.dashboard', compact('users'));
-    }
+        return view('dashboard', ['users' => $users]);    }
 
     // ユーザー削除
     public function destroy(User $user)
