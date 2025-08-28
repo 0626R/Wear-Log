@@ -11,9 +11,8 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Auth\UnifiedLoginController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\CalendarController;
 
-
-Route::view('/calendar', 'stubs.calendar')->name('calendar');
 Route::view('/statistics', 'stubs.statistics')->name('statistics');
 Route::view('/mypage', 'stubs.mypage')->name('mypage');
 
@@ -39,13 +38,6 @@ Route::get('/items/clear-selected-colors', function () {
     return redirect()->route('items.selectColor');
 })->name('items.clearSelectedColors');
 
-Route::get('/items/{item}',        [ItemController::class, 'show'])->name('items.show');
-
-Route::get('/items/{item}',        [ItemController::class, 'show'])->name('items.show');
-Route::get('/items/{item}/edit',   [ItemController::class, 'edit'])->name('items.edit');
-Route::put('/items/{item}',        [ItemController::class, 'update'])->name('items.update');
-Route::delete('/items/{item}',     [ItemController::class, 'destroy'])->name('items.destroy');
-Route::delete('/items/{item}',     [ItemController::class, 'destroy'])->name('items.destroy');
 
 
 // // Route::get('/', function () {
@@ -67,6 +59,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/calendar',  [CalendarController::class, 'index'])->name('calendar');
+    Route::post('/calendar/upload', [CalendarController::class, 'store'])->name('calendar.upload');
 });
 
 // // 一般ユーザーのホーム
@@ -200,3 +194,11 @@ Route::middleware('auth:admin')->prefix('admin')->name('admin.')->group(function
     Route::get('/dashboard', [UserAdminController::class, 'index'])->name('dashboard');
     Route::delete('/users/{user}', [UserAdminController::class, 'destroy'])->name('users.destroy');
 });
+
+Route::get('/items/{item}',        [ItemController::class, 'show'])->name('items.show');
+
+Route::get('/items/{item}',        [ItemController::class, 'show'])->name('items.show');
+Route::get('/items/{item}/edit',   [ItemController::class, 'edit'])->name('items.edit');
+Route::put('/items/{item}',        [ItemController::class, 'update'])->name('items.update');
+Route::delete('/items/{item}',     [ItemController::class, 'destroy'])->name('items.destroy');
+Route::delete('/items/{item}',     [ItemController::class, 'destroy'])->name('items.destroy');

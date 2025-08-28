@@ -37,6 +37,11 @@
             <input class="form-check-input" type="checkbox" id="winter">
             <label class="form-check-label" for="summer">冬</label>
         </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="winter">
+            <label class="form-check-label" for="summer">通年</label>
+        </div>
+
     </div>
 </div>
 @endsection

@@ -133,6 +133,19 @@
 @endsection
 
 <script>
+const fmtDate = (ts, tz = 0) => {
+  // ts は UTC秒。tz は秒のオフセット（例: 日本は 32400）
+  const d = new Date((ts + tz) * 1000);
+  const p = new Intl.DateTimeFormat('ja-JP', {
+    timeZone: 'UTC', month: 'numeric', day: 'numeric', weekday: 'short'
+  }).formatToParts(d);
+  const m  = p.find(x => x.type === 'month').value;
+  const day= p.find(x => x.type === 'day').value;
+  const wk = p.find(x => x.type === 'weekday').value; // 例: "土"
+  return `${m}月${day}日(${wk})`;
+};
+
+
     document.addEventListener('DOMContentLoaded', () => {
   const API_KEY = "{{ config('services.openweather.key') }}";
   if (!API_KEY) { console.error('OpenWeather API key is empty'); return; }
@@ -143,11 +156,11 @@
   if (!$today || !$tomorrow || !$city) return;
 
   // 表示用ユーティリティ
-  const fmtDate = (ts, tz=0) => {
-    const d = new Date((ts+tz)*1000);
-    const s = d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',weekday:'short'});
-    return s.replace('/', '月') + '日';
-  };
+//   const fmtDate = (ts, tz=0) => {
+//     const d = new Date((ts+tz)*1000);
+//     const s = d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric',weekday:'short'});
+//     return s.replace('/', '月') + '日';
+//   };
   const iconTag = (code, alt='') =>
     `<img class="owm-icon" src="https://openweathermap.org/img/wn/${code}@4x.png" alt="${alt}">`;
 
@@ -173,7 +186,7 @@
     return { today: keys[0] && pick(keys[0]), tomorrow: keys[1] && pick(keys[1]) };
   }
 
-  // 逆ジオの結果から「市/町/村」を優先し、必要なら“名取”を最優先
+  // 逆ジオの結果から「市/町/村」を優先し、“名取”を最優先
   function pickCityName(rs){
     if (!Array.isArray(rs) || !rs.length) return '現在地';
     const preferNatori = rs.find(r =>
@@ -200,18 +213,77 @@
       const tz = curr.timezone ?? 0;
 
       const { today, tomorrow } = summarize(fc.list, tz);
-      if (today){
-        $today.innerHTML =
-          `<strong>${fmtDate(today.dt,tz)}</strong> ${iconTag(today.icon,today.desc)}
-           <span class="temp-max">${Math.round(today.tmax)}°C</span> /
-           <span class="temp-min">${Math.round(today.tmin)}°C</span>`;
-      }
-      if (tomorrow){
-        $tomorrow.innerHTML =
-          `<strong>${fmtDate(tomorrow.dt,tz)}</strong> ${iconTag(tomorrow.icon,tomorrow.desc)}
-           <span class="temp-min">${Math.round(tomorrow.tmax)}°C</span> /
-           <span class="temp-min">${Math.round(tomorrow.tmin)}°C</span>`;
-      }
+    //   if (today){
+    //     $today.innerHTML =
+    //       `<strong>${fmtDate(today.dt,tz)}</strong> ${iconTag(today.icon,today.desc)}
+    //        <span class="temp-max">${Math.round(today.tmax)}°C</span> /
+    //        <span class="temp-min">${Math.round(today.tmin)}°C</span>`;
+    //   }
+    //   if (tomorrow){
+    //     $tomorrow.innerHTML =
+    //       `<strong>${fmtDate(tomorrow.dt,tz)}</strong> ${iconTag(tomorrow.icon,tomorrow.desc)}
+    //        <span class="temp-min">${Math.round(tomorrow.tmax)}°C</span> /
+    //        <span class="temp-min">${Math.round(tomorrow.tmin)}°C</span>`;
+    //   }
+
+    // 予報を日単位にまとめる
+const byDay = {};
+for (const it of fc.list) {
+  const key = new Date((it.dt + tz) * 1000).toISOString().slice(0, 10);
+  (byDay[key] ??= []).push(it);
+}
+const keys = Object.keys(byDay).sort();
+const pick = (arr) => {
+  const tmin = Math.min(...arr.map(x => x.main.temp_min));
+  const tmax = Math.max(...arr.map(x => x.main.temp_max));
+  const mid  = arr.reduce((best, x) => {
+    const h  = new Date((x.dt   + tz) * 1000).getHours();
+    const hb = new Date((best.dt+ tz) * 1000).getHours();
+    return Math.abs(h - 12) < Math.abs(hb - 12) ? x : best;
+  }, arr[0]);
+  return { tmin, tmax, icon: mid.weather[0].icon, desc: mid.weather[0].description, dt: arr[0].dt };
+};
+
+// “今日”のキー（現在天気を基準に決める）
+const todayKey = new Date((curr.dt + tz) * 1000).toISOString().slice(0, 10);
+
+// 今日の要約（無ければ null）
+const todaySum = byDay[todayKey] ? pick(byDay[todayKey]) : null;
+
+// “明日”は今日より後で最も近い日。無ければ最初のキー。
+const tomorrowKey = keys.find(k => k > todayKey) || keys[0];
+const tomorrowSum = tomorrowKey ? pick(byDay[tomorrowKey]) : null;
+
+// 表示
+if (todaySum) {
+  $today.innerHTML =
+    `<strong>${fmtDate(todaySum.dt, tz)}</strong> ${iconTag(todaySum.icon, todaySum.desc)}
+     <span class="temp-max">${Math.round(todaySum.tmax)}°C</span> /
+     <span class="temp-min">${Math.round(todaySum.tmin)}°C</span>`;
+} else {
+  // 予報に今日が無い時間帯は現在天気の min/max で代替表示
+  const tmin = Math.round(
+    (curr.main && (curr.main.temp_min ?? curr.main.temp)) ?? 0
+  );
+  const tmax = Math.round(
+    (curr.main && (curr.main.temp_max ?? curr.main.temp)) ?? 0
+  );
+
+  $today.innerHTML =
+    `<strong>${fmtDate(curr.dt, tz)}</strong> ` +
+    `${iconTag(curr.weather[0].icon, curr.weather[0].description)} ` +
+    `<span class="temp-max">${tmax}°C</span> / ` +
+    `<span class="temp-min">${tmin}°C</span>`;
+}
+
+if (tomorrowSum) {
+  $tomorrow.innerHTML =
+    `<strong>${fmtDate(tomorrowSum.dt, tz)}</strong> ${iconTag(tomorrowSum.icon, tomorrowSum.desc)}
+     <span class="temp-max">${Math.round(tomorrowSum.tmax)}°C</span> /
+     <span class="temp-min">${Math.round(tomorrowSum.tmin)}°C</span>`;
+}
+
+
 
       // 逆ジオで市名を優先的に表示
       const geo = await fetch(
