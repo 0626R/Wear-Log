@@ -7,13 +7,32 @@ use App\Models\Item;
 use App\Models\Color;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Category;
+use Illuminate\Support\Facades\Schema;
 
 
 class ItemController extends Controller
 {
-    public function filter()
+    public function filter(Request $request)
     {
-        return view('items.filter');
+        $seasons = [
+            'spring'   => '春',
+            'summer'   => '夏',
+            'autumn'   => '秋',
+            'winter'   => '冬',
+            'all_year' => '通年',
+        ];
+
+        // name をトリム＆小文字化して一意化（slug 非使用）
+        $colors = Color::orderBy('name')->get()
+            ->unique(fn($c) => mb_strtolower(trim($c->name)))
+            ->values();
+
+        // 既存の選択値（再表示用）
+        return view('items.filter', [
+            'seasons' => $seasons,
+            'colors'  => $colors,
+            'q'       => $request->all(),   // そのままビューへ
+        ]);
     }
 
     public function home(Request $request)
@@ -29,6 +48,48 @@ class ItemController extends Controller
     //         });
     //     })
     //     ->get();
+
+    // 一覧クエリ
+    $q = \App\Models\Item::query()
+        ->with('colors')
+        ->where('user_id', auth()->id());
+
+    // ------- 絞り込み -------
+    if ($request->filled('seasons')) {
+        $vals = (array) $request->input('seasons');
+        $q->whereIn('season', (array)$request->input('seasons'));
+    }
+
+    if ($request->filled('colors')) {
+        $ids = (array)$request->input('colors');   // ← color の id
+        $q->whereHas('colors', fn($w) => $w->whereIn('colors.id', $ids));
+    }
+
+    // ------- 並び替え -------
+    $sort = $request->input('sort', 'normal');
+    switch ($sort) {
+        case 'usage_high': // 利用頻度が高い順
+            Schema::hasColumn('items','wear_count')
+              ? $q->orderBy('wear_count','desc')
+              : $q->latest('id');
+            break;
+        case 'usage_low':  // 利用頻度が低い順
+            Schema::hasColumn('items','wear_count')
+              ? $q->orderBy('wear_count','asc')
+              : $q->latest('id');
+            break;
+        case 'created_desc': // 登録日 新しい順
+            $q->orderBy('created_at','desc'); break;
+        case 'created_asc':  // 登録日 古い順
+            $q->orderBy('created_at','asc');  break;
+        default:
+            $q->latest('id');
+    }
+
+    // 取得（クエリパラメータ保持）
+    $items = $q->paginate(60)->appends($request->query());
+
+    return view('items.home', compact('items'));
 
         $items = \App\Models\Item::with('categories')
         ->where('user_id', auth()->id())

@@ -20,6 +20,7 @@
         <dt class="col-sm-3">購入価格</dt><dd class="col-sm-9">{{ $item->price }}</dd>
         <dt class="col-sm-3">シーズン</dt><dd class="col-sm-9">{{ $item->season }}</dd>
         <dt class="col-sm-3">購入日</dt><dd class="col-sm-9">{{ optional($item->purchased_at)->format('Y-m-d') }}</dd>
+        <dt class="col-sm-3">着用回数</dt><dd class="col-sm-9">{{ number_format($item->wear_count ?? $item->worn_count ?? 0) }}回</dd>
         <dt class="col-sm-3">出品状況</dt><dd class="col-sm-9">{{ $item->status }}</dd>
         <dt class="col-sm-3">メモ</dt><dd class="col-sm-9">{!! nl2br(e($item->memo)) !!}</dd>
       </dl>
