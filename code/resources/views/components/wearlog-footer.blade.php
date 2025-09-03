@@ -9,9 +9,9 @@
       カレンダー
     </a>
   
-    <a href="{{ route('statistics') }}" class="wl-link">
+    <a href="{{ route('statistics.index') }}" class="wl-link">
       <img src="{{ asset('images/icon_graph.png') }}" alt="統計">
-      統計
+      抽出
     </a>
   
     <a href="{{ route('others') }}" class="wl-link">

@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\UserAdminController;
 use App\Http\Controllers\Auth\UnifiedLoginController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\StatisticsController;
+
 
 Route::view('/statistics', 'stubs.statistics')->name('statistics');
 Route::view('/mypage', 'stubs.mypage')->name('mypage');
@@ -204,3 +206,16 @@ Route::delete('/items/{item}',     [ItemController::class, 'destroy'])->name('it
 Route::delete('/items/{item}',     [ItemController::class, 'destroy'])->name('items.destroy');
 
 
+Route::middleware('auth')->group(function () {
+    Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics.index');
+    Route::get('/statistics/export/pdf', [StatisticsController::class, 'exportPdf'])->name('statistics.export.pdf');
+});
+
+Route::get('/statistics/export/pdf', [StatisticsController::class, 'pdf'])
+    ->name('statistics.export.pdf');
+
+    Route::prefix('statistics')->group(function () {
+        Route::get('/', [StatisticsController::class, 'index'])->name('statistics.index');
+        Route::get('/export/pdf', [StatisticsController::class, 'exportPdf'])
+            ->name('statistics.export.pdf');   // ← ここを exportPdf に
+    });
