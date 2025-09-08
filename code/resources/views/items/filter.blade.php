@@ -6,7 +6,7 @@
     <div class="flt-top">
         <a href="{{ url()->previous() }}" class="back">‹</a>
         <h2 class="text-center mb-2">並び替え・絞り込み</h2>
-        <button type="submit" class="done">完了</button>
+        <div></div>
     </div>
     <hr class="mb-4" style="width: 100%; height: 2px; background-color: black; margin: 0 auto;">
 

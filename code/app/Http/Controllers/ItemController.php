@@ -12,15 +12,17 @@ use Illuminate\Support\Facades\Schema;
 
 class ItemController extends Controller
 {
+    private const SEASON_MAP = [
+        'spring'   => '春',
+        'summer'   => '夏',
+        'autumn'   => '秋',
+        'winter'   => '冬',
+        'all_year' => '通年',
+    ];
+
     public function filter(Request $request)
     {
-        $seasons = [
-            'spring'   => '春',
-            'summer'   => '夏',
-            'autumn'   => '秋',
-            'winter'   => '冬',
-            'all_year' => '通年',
-        ];
+        $seasons = ['春', '夏', '秋', '冬', '通年'];
 
         // name をトリム＆小文字化して一意化（slug 非使用）
         $colors = Color::orderBy('name')->get()
@@ -40,6 +42,17 @@ class ItemController extends Controller
         // 選択されたカテゴリ（なければ「すべて」）
         $selectedCategory = $request->input('category', 'すべて');
 
+        $q = \App\Models\Item::query()
+        ->with(['colors','categories'])
+        ->where('user_id', auth()->id());
+
+         // アイテム取得（カテゴリで絞り込み）
+        if ($selectedCategory !== 'すべて') {
+            $q->whereHas('categories', function ($qq) use ($selectedCategory) {
+                $qq->where('name', $selectedCategory);
+            });
+        }
+
         // アイテム取得（カテゴリで絞り込み）
     // $items = \App\Models\Item::with('categories')
     //     ->when($selectedCategory !== 'すべて', function ($q) use ($selectedCategory) {
@@ -49,15 +62,17 @@ class ItemController extends Controller
     //     })
     //     ->get();
 
-    // 一覧クエリ
-    $q = \App\Models\Item::query()
-        ->with('colors')
-        ->where('user_id', auth()->id());
+    // // 一覧クエリ
+    // $q = \App\Models\Item::query()
+    //     ->with('colors')
+    //     ->where('user_id', auth()->id());
 
     // ------- 絞り込み -------
     if ($request->filled('seasons')) {
-        $vals = (array) $request->input('seasons');
-        $q->whereIn('season', (array)$request->input('seasons'));
+        $vals = collect($request->input('seasons', []))
+            ->map(fn ($k) => self::SEASON_MAP[$k] ?? $k) // ← 英→日
+            ->unique()->values()->all();
+        $q->whereIn('season', $vals);
     }
 
     if ($request->filled('colors')) {
